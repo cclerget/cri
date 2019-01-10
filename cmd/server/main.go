@@ -23,13 +23,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/golang/glog"
 	"github.com/sylabs/cri/pkg/index"
 	"github.com/sylabs/cri/pkg/server/image"
 	"github.com/sylabs/cri/pkg/server/runtime"
 	"github.com/sylabs/singularity/pkg/util/user-agent"
 	"google.golang.org/grpc"
-	"k8s.io/kubernetes/pkg/kubectl/util/logs"
+	glog "k8s.io/klog"
 	k8s "k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2"
 )
 
@@ -59,9 +58,8 @@ func logGRPC(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, h
 }
 
 func main() {
+	glog.InitFlags(nil)
 	f := readFlags()
-	logs.InitLogs()
-	defer logs.FlushLogs()
 
 	// Initialize user agent strings
 	useragent.InitValue("singularity", "3.0.0")
