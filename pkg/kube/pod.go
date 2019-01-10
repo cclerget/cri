@@ -19,12 +19,12 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/golang/glog"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sylabs/cri/pkg/namespace"
 	"github.com/sylabs/cri/pkg/rand"
 	"github.com/sylabs/cri/pkg/singularity/runtime"
 	"github.com/sylabs/singularity/pkg/ociruntime"
+	glog "k8s.io/klog"
 	k8s "k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2"
 )
 

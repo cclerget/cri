@@ -23,12 +23,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/sylabs/cri/pkg/image"
 	"github.com/sylabs/cri/pkg/rand"
 	"github.com/sylabs/cri/pkg/singularity/runtime"
 	"github.com/sylabs/singularity/pkg/ociruntime"
 	"github.com/sylabs/singularity/pkg/util/unix"
+	glog "k8s.io/klog"
 	k8s "k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2"
 )
 

@@ -21,10 +21,10 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/golang/glog"
 	"github.com/sylabs/cri/pkg/image"
 	"github.com/sylabs/sif/pkg/sif"
 	"github.com/sylabs/singularity/pkg/util/loop"
+	glog "k8s.io/klog"
 )
 
 const (

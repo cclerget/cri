@@ -22,13 +22,13 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/kr/pty"
 	"github.com/kubernetes-sigs/cri-o/utils"
-	"github.com/opencontainers/runtime-spec/specs-go"
+	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sylabs/singularity/pkg/ociruntime"
 	"github.com/sylabs/singularity/pkg/util/unix"
 	"k8s.io/client-go/tools/remotecommand"
+	glog "k8s.io/klog"
 	k8s "k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2"
 )
 

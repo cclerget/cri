@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/sylabs/singularity/pkg/util/capabilities"
+	glog "k8s.io/klog"
 )
 
 const (

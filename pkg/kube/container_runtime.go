@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/sylabs/cri/pkg/image"
 	"github.com/sylabs/cri/pkg/singularity/runtime"
+	glog "k8s.io/klog"
 )
 
 func (c *Container) spawnOCIContainer(imgInfo *image.Info) error {

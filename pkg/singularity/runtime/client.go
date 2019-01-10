@@ -25,10 +25,10 @@ import (
 	"os/exec"
 	"syscall"
 
-	"github.com/golang/glog"
-	"github.com/opencontainers/runtime-spec/specs-go"
+	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sylabs/cri/pkg/singularity"
 	"github.com/sylabs/singularity/pkg/ociruntime"
+	glog "k8s.io/klog"
 )
 
 const (

@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/golang/glog"
+	glog "k8s.io/klog"
 )
 
 // State defines type for manipulating with container's state.

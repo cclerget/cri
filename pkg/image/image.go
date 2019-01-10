@@ -26,12 +26,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/sylabs/cri/pkg/rand"
 	"github.com/sylabs/cri/pkg/singularity"
 	"github.com/sylabs/sif/pkg/sif"
 	library "github.com/sylabs/singularity/pkg/client/library"
 	"github.com/sylabs/singularity/pkg/signing"
+	glog "k8s.io/klog"
 	k8s "k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2"
 )
 
