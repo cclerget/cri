@@ -20,7 +20,7 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
-	"github.com/opencontainers/runtime-spec/specs-go"
+	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sylabs/cri/pkg/namespace"
 	"github.com/sylabs/cri/pkg/rand"
 	"github.com/sylabs/cri/pkg/singularity/runtime"

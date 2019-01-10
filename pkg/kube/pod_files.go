@@ -38,10 +38,10 @@ const (
 	podOCIConfigPath = "config.json"
 )
 
-// namespacePath returns path to pod's namespace file of the passed type.
+// NamespacePath returns path to pod's namespace file of the passed type.
 // If requested namespace is not unshared specifically for pod an empty
 // string is returned.
-func (p *Pod) namespacePath(nsType specs.LinuxNamespaceType) string {
+func (p *Pod) NamespacePath(nsType specs.LinuxNamespaceType) string {
 	for _, ns := range p.namespaces {
 		if ns.Type == nsType {
 			return p.bindNamespacePath(nsType)

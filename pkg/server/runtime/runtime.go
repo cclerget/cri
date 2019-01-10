@@ -21,9 +21,12 @@ import (
 	"os/exec"
 	"time"
 
+	"k8s.io/kubernetes/pkg/kubelet/dockershim/network"
+
 	"github.com/golang/glog"
 	"github.com/sylabs/cri/pkg/index"
 	"github.com/sylabs/cri/pkg/kube"
+	"github.com/sylabs/cri/pkg/netplugin"
 	"github.com/sylabs/cri/pkg/singularity"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -33,13 +36,13 @@ import (
 
 // SingularityRuntime implements k8s RuntimeService interface.
 type SingularityRuntime struct {
-	singularity string
-	starter     string
-	imageIndex  *index.ImageIndex
-	pods        *index.PodIndex
-	containers  *index.ContainerIndex
-
-	streaming streaming.Server
+	singularity   string
+	starter       string
+	imageIndex    *index.ImageIndex
+	pods          *index.PodIndex
+	containers    *index.ContainerIndex
+	streaming     streaming.Server
+	networkPlugin network.NetworkPlugin
 }
 
 // NewSingularityRuntime initializes and returns SingularityRuntime.
@@ -56,11 +59,12 @@ func NewSingularityRuntime(streamURL string, imgIndex *index.ImageIndex) (*Singu
 	}
 
 	runtime := &SingularityRuntime{
-		singularity: sing,
-		starter:     start,
-		imageIndex:  imgIndex,
-		pods:        index.NewPodIndex(),
-		containers:  index.NewContainerIndex(),
+		singularity:   sing,
+		starter:       start,
+		imageIndex:    imgIndex,
+		pods:          index.NewPodIndex(),
+		containers:    index.NewContainerIndex(),
+		networkPlugin: netplugin.Get("", []string{}),
 	}
 	streamingRuntime := &streamingRuntime{runtime}
 
@@ -79,6 +83,11 @@ func NewSingularityRuntime(streamURL string, imgIndex *index.ImageIndex) (*Singu
 	}()
 
 	runtime.streaming = streamingServer
+
+	if err := runtime.networkPlugin.Init(runtime, "", "", 0); err != nil {
+		return nil, fmt.Errorf("could not initialize network plugin: %v", err)
+	}
+
 	return runtime, nil
 }
 
@@ -247,7 +256,17 @@ func (s *SingularityRuntime) ListContainerStats(ctx context.Context, req *k8s.Li
 
 // UpdateRuntimeConfig updates the runtime configuration based on the given request.
 func (s *SingularityRuntime) UpdateRuntimeConfig(ctx context.Context, req *k8s.UpdateRuntimeConfigRequest) (*k8s.UpdateRuntimeConfigResponse, error) {
-	glog.Warningf("Ignoring runtime config update %v", req)
+	config := req.GetRuntimeConfig()
+	if config == nil {
+		return &k8s.UpdateRuntimeConfigResponse{}, nil
+	}
+
+	if s.networkPlugin != nil && config.NetworkConfig.PodCidr != "" {
+		event := make(map[string]interface{})
+		event[network.NET_PLUGIN_EVENT_POD_CIDR_CHANGE_DETAIL_CIDR] = config.NetworkConfig.PodCidr
+		s.networkPlugin.Event(network.NET_PLUGIN_EVENT_POD_CIDR_CHANGE, event)
+	}
+
 	return &k8s.UpdateRuntimeConfigResponse{}, nil
 }
 

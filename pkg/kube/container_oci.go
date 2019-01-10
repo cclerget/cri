@@ -22,7 +22,7 @@ import (
 	"syscall"
 
 	"github.com/opencontainers/runc/libcontainer/user"
-	"github.com/opencontainers/runtime-spec/specs-go"
+	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/generate/seccomp"
 	"golang.org/x/sys/unix"
@@ -188,7 +188,7 @@ func (t *containerTranslator) device(from, to string) (*specs.LinuxDevice, error
 
 func (t *containerTranslator) configureNamespaces() {
 	t.g.ClearLinuxNamespaces()
-	t.g.AddOrReplaceLinuxNamespace(specs.UTSNamespace, t.pod.namespacePath(specs.UTSNamespace))
+	t.g.AddOrReplaceLinuxNamespace(specs.UTSNamespace, t.pod.NamespacePath(specs.UTSNamespace))
 	t.g.AddOrReplaceLinuxNamespace(specs.MountNamespace, "")
 
 	security := t.cont.GetLinux().GetSecurityContext()
@@ -196,7 +196,7 @@ func (t *containerTranslator) configureNamespaces() {
 	case k8s.NamespaceMode_CONTAINER:
 		t.g.AddOrReplaceLinuxNamespace(specs.IPCNamespace, "")
 	case k8s.NamespaceMode_POD:
-		podNsPath := t.pod.namespacePath(specs.IPCNamespace)
+		podNsPath := t.pod.NamespacePath(specs.IPCNamespace)
 		if podNsPath != "" {
 			t.g.AddOrReplaceLinuxNamespace(specs.IPCNamespace, podNsPath)
 		}
@@ -205,7 +205,7 @@ func (t *containerTranslator) configureNamespaces() {
 	case k8s.NamespaceMode_CONTAINER:
 		t.g.AddOrReplaceLinuxNamespace(specs.NetworkNamespace, "")
 	case k8s.NamespaceMode_POD:
-		podNsPath := t.pod.namespacePath(specs.NetworkNamespace)
+		podNsPath := t.pod.NamespacePath(specs.NetworkNamespace)
 		if podNsPath != "" {
 			t.g.AddOrReplaceLinuxNamespace(specs.NetworkNamespace, podNsPath)
 		}
@@ -214,7 +214,7 @@ func (t *containerTranslator) configureNamespaces() {
 	case k8s.NamespaceMode_CONTAINER:
 		t.g.AddOrReplaceLinuxNamespace(string(specs.PIDNamespace), "")
 	case k8s.NamespaceMode_POD:
-		podNsPath := t.pod.namespacePath(specs.PIDNamespace)
+		podNsPath := t.pod.NamespacePath(specs.PIDNamespace)
 		if podNsPath != "" {
 			t.g.AddOrReplaceLinuxNamespace(string(specs.PIDNamespace), podNsPath)
 		}
