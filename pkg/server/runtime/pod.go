@@ -184,6 +184,7 @@ func (s *SingularityRuntime) ListPodSandbox(_ context.Context, req *k8s.ListPodS
 			return
 		}
 		if pod.MatchesFilter(req.Filter) {
+			glog.Infof("POD %s found", pod.ID())
 			pods = append(pods, &k8s.PodSandbox{
 				Id:          pod.ID(),
 				Metadata:    pod.GetMetadata(),
