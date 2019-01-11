@@ -179,6 +179,7 @@ func (s *SingularityRuntime) ListPodSandbox(_ context.Context, req *k8s.ListPodS
 	var pods []*k8s.PodSandbox
 
 	appendPodToResult := func(pod *kube.Pod) {
+		glog.Infof("pod labels: %s", pod.GetLabels())
 		if err := pod.UpdateState(); err != nil {
 			glog.Errorf("Could not update pod state: %v", err)
 			return
