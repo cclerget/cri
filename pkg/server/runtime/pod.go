@@ -52,15 +52,17 @@ func (s *SingularityRuntime) RunPodSandbox(_ context.Context, req *k8s.RunPodSan
 		return nil, err
 	}
 
-	// setup POD network
-	containerID := kubecontainer.BuildContainerID("singularity", pod.ID())
-	err = s.networkPlugin.SetUpPod(config.GetMetadata().Namespace, config.GetMetadata().Name, containerID, config.Annotations, nil)
-	if err != nil {
-		// ignore error
-		s.networkPlugin.TearDownPod(config.GetMetadata().Namespace, config.GetMetadata().Name, containerID)
+	if pod.NamespacePath(specs.NetworkNamespace) != "" {
+		// setup POD network
+		containerID := kubecontainer.BuildContainerID("singularity", pod.ID())
+		err = s.networkPlugin.SetUpPod(config.GetMetadata().Namespace, config.GetMetadata().Name, containerID, config.Annotations, nil)
+		if err != nil {
+			// ignore error
+			s.networkPlugin.TearDownPod(config.GetMetadata().Namespace, config.GetMetadata().Name, containerID)
 
-		cleanupOnFailure()
-		return nil, err
+			cleanupOnFailure()
+			return nil, err
+		}
 	}
 
 	return &k8s.RunPodSandboxResponse{
@@ -83,10 +85,12 @@ func (s *SingularityRuntime) StopPodSandbox(_ context.Context, req *k8s.StopPodS
 		return nil, err
 	}
 
-	containerID := kubecontainer.BuildContainerID("singularity", pod.ID())
-	err = s.networkPlugin.TearDownPod(pod.GetMetadata().Namespace, pod.GetMetadata().Name, containerID)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not tear down pod network interface: %v", err)
+	if pod.NamespacePath(specs.NetworkNamespace) != "" {
+		containerID := kubecontainer.BuildContainerID("singularity", pod.ID())
+		err = s.networkPlugin.TearDownPod(pod.GetMetadata().Namespace, pod.GetMetadata().Name, containerID)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "could not tear down pod network interface: %v", err)
+		}
 	}
 
 	if err := pod.Stop(); err != nil {
@@ -140,10 +144,15 @@ func (s *SingularityRuntime) PodSandboxStatus(_ context.Context, req *k8s.PodSan
 		}
 	}
 
-	containerID := kubecontainer.BuildContainerID("singularity", pod.ID())
-	networkStatus, err := s.networkPlugin.GetPodNetworkStatus(pod.GetMetadata().Namespace, pod.GetMetadata().Name, containerID)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not retrieve pod network status: %v", err)
+	var networkStatus *k8s.PodSandboxNetworkStatus
+
+	if pod.NamespacePath(specs.NetworkNamespace) != "" {
+		containerID := kubecontainer.BuildContainerID("singularity", pod.ID())
+		netPodStatus, err := s.networkPlugin.GetPodNetworkStatus(pod.GetMetadata().Namespace, pod.GetMetadata().Name, containerID)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "could not retrieve pod network status: %v", err)
+		}
+		networkStatus = &k8s.PodSandboxNetworkStatus{Ip: netPodStatus.IP.String()}
 	}
 
 	return &k8s.PodSandboxStatusResponse{
@@ -152,7 +161,7 @@ func (s *SingularityRuntime) PodSandboxStatus(_ context.Context, req *k8s.PodSan
 			Metadata:  pod.GetMetadata(),
 			State:     pod.State(),
 			CreatedAt: pod.CreatedAt(),
-			Network:   &k8s.PodSandboxNetworkStatus{Ip: networkStatus.IP.String()},
+			Network:   networkStatus,
 			Linux: &k8s.LinuxPodSandboxStatus{
 				Namespaces: &k8s.Namespace{
 					Options: pod.GetLinux().GetSecurityContext().GetNamespaceOptions(),
@@ -225,7 +234,7 @@ func (s *SingularityRuntime) GetNetNS(containerID string) (string, error) {
 		return "", fmt.Errorf("can't determine network namespace path")
 	}
 
-	return path, nil
+	return pod.NamespacePath(specs.NetworkNamespace), nil
 }
 
 func (s *SingularityRuntime) findPod(id string) (*kube.Pod, error) {

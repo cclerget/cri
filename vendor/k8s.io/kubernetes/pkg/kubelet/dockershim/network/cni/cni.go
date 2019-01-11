@@ -53,7 +53,7 @@ type cniNetworkPlugin struct {
 	nsenterPath string
 	confDir     string
 	binDirs     []string
-	podCidr     string
+	podCidr     cnitypes.IPNet
 }
 
 type cniNetwork struct {
@@ -89,7 +89,7 @@ type cniBandwidthEntry struct {
 
 // cniIpRange maps to the standard CNI ip range Capability
 type cniIpRange struct {
-	Subnet string `json:"subnet"`
+	Subnet cnitypes.IPNet `json:"subnet"`
 }
 
 // cniDNSConfig maps to the windows CNI dns Capability.
@@ -226,7 +226,7 @@ func (plugin *cniNetworkPlugin) checkInitialized() error {
 	// If the CNI configuration has the ipRanges capability, we need a PodCIDR assigned
 	for _, p := range plugin.getDefaultNetwork().NetworkConfig.Plugins {
 		if p.Network.Capabilities["ipRanges"] {
-			if plugin.podCidr == "" {
+			if plugin.podCidr.IP.String() == "" {
 				return errors.New("no PodCIDR set")
 			}
 			break
@@ -251,12 +251,18 @@ func (plugin *cniNetworkPlugin) Event(name string, details map[string]interface{
 		return
 	}
 
-	if plugin.podCidr != "" {
+	if plugin.podCidr.IP.String() != "" {
 		klog.Warningf("Ignoring subsequent pod CIDR update to %s", podCIDR)
 		return
 	}
 
-	plugin.podCidr = podCIDR
+	cidr, err := cnitypes.ParseCIDR(podCIDR)
+	if err != nil {
+		klog.Warningf("Can't parse pod CIDR %s: %s", podCIDR, err)
+		return
+	}
+
+	plugin.podCidr = cnitypes.IPNet(*cidr)
 }
 
 func (plugin *cniNetworkPlugin) Name() string {
