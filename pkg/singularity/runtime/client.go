@@ -26,7 +26,7 @@ import (
 	"syscall"
 
 	"github.com/golang/glog"
-	"github.com/opencontainers/runtime-spec/specs-go"
+	specs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sylabs/cri/pkg/singularity"
 	"github.com/sylabs/singularity/pkg/ociruntime"
 )
@@ -55,7 +55,7 @@ type (
 
 // NewCLIClient returns new CLIClient ready to use.
 func NewCLIClient() *CLIClient {
-	return &CLIClient{baseCmd: []string{singularity.RuntimeName, "-s", "oci"}}
+	return &CLIClient{baseCmd: []string{singularity.RuntimeName, "-d", "oci"}}
 }
 
 // State returns state of a container with passed id.
