@@ -59,7 +59,7 @@ type (
 
 // NewCLIClient returns new CLIClient ready to use.
 func NewCLIClient() *CLIClient {
-	return &CLIClient{baseCmd: []string{singularity.RuntimeName, "-q", "oci"}}
+	return &CLIClient{baseCmd: []string{singularity.RuntimeName, "-d", "oci"}}
 }
 
 // State returns state of a container with passed id. If runtime fails
